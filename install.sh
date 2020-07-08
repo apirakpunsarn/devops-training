@@ -5,4 +5,4 @@ cp /tmp/minikube /usr/local/bin/minikube
 chmod 755 /usr/local/bin/minikube
 
 
-apt install virtualbox
+apt install virtualbox vagrant
