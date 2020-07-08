@@ -1,0 +1,57 @@
+ปฏิบัติการที่ 1 การติดตั้ง minikube บน Linux
+wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+sudo cp minikube-linux-amd64 /usr/local/bin/minikube
+sudo chmod 755 /usr/local/bin/minikube
+sudo apt install virtualbox
+sudo apt-get install vagrant
+minikube start 
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+Kubectl version --client
+
+ปฏิบัติการที่ 2 การเตรียม Ubuntu เวอร์ชันใหม่สุดใน Vagrant
+====================
+sudo apt-get install vagrant
+mkdir ubuntu
+cd ubuntu
+vagrant init ubuntu/bionic64
+vagrant up
+vagrant ssh
+
+ปฏิบัติการที่ 3 การเตรียม aws ในอิมเมจ Vagrant
+wget https://github.com/kubernetes/kops/releases/download/v1.17.0/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/
+sudo apt-get update 
+sudo apt-get install python-pip
+sudo pip install awscli
+aws
+===================
+aws configure 
+ระบุค่า Access Key และ secret access key ที่ได้จาก AWS 
+/* ต้องไปทำแลปลงทะเบียนบน AWS จะได้คีย์เข้าใช้ ให้จดแล้วนำค่าที่ได้มาระบุเพื่อเชื่อมโยง */
+
+การติดตั้ง Kubectl
+wget https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
+sudo mv kubectl /usr/local/bin/
+sudo chmod +x /usr/local/bin/kubectl
+kubectl
+
+การบริหารงาน Kops
+kops validate cluster --state=s3://kops-state-a001a
+kubectl get nodes --show-labels
+
+kops delete cluster --name=kubernetes.getyoungit.com --state=s3://kops-state-a001a --yes
+ถ้ายังไม่มี Cluster ใน aws ให้สร้าง ต้องมั่นใจว่าได้แก้ไขปัญหา DNS แล้ว
+kops create cluster --name=kubernetes.getyoungit.com --state=s3://kops-state-a001a --zones=ap-southeast-1a --node-count=3 --node-size=t2.medium --master-size=t2.medium --dns-zone=kubernetes.getyoungit.com
+kops update cluster --name kubernetes.getyoungit.com --yes --state=s3://kops-state-a001a
+kops rolling-update cluster --name kubernetes.getyoungit.com --yes --state=s3://kops-state-a001a
+
+เตรียมปฏิบัติการ
+git clone https://github.com/khajorn/kubernetes-course
+
+kops delete cluster
+cluster "domain" already exists; use 'kops update cluster' to apply changes
