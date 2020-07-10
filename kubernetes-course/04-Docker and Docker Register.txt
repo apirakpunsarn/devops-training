@@ -1,0 +1,26 @@
+การสร้าง Docker Container
+===============
+sudo apt-get install docker.io
+docker --version
+sudo apt-get install git
+git clone https://github.com/khajorn/docker-demo
+cd docker-demo
+sudo usermod -G docker nstda/ubuntu ชื่อผู้ใช้ที่ล็อกออน
+logout
+vagrant ssh
+cd docker-demo
+sudo docker build . 
+(Get Built ID - xxxxxxxxxx) 
+sudo docker container ls -a
+sudo docker run -p 3000:3000 -it xxxxxxxxxx
+=== Open another terminal ===
+curl localhost:3000
+sudo date --set="2020-07-09 10:27"
+=== Register Docker Hub ==== <Use Web Browser (Free)
+sudo docker login 
+sudo docker tag xxxxxxxxxxx khajorn/k8s-demo
+sudo docker images
+sudo docker push khajorn/k8s-demo:latest
+
+
+

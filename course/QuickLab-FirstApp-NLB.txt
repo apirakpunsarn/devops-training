@@ -1,0 +1,18 @@
+kubectl create -f first-app/helloworld.yml 
+--> Different from kubectl expose pod ... (Last lab)
+kubectl create -f first-app/helloworld-service.yml
+
+kubectl get service (Found status is pending)
+
+aws iam create-service-linked-role --aws-service-name "elasticloadbalancing.amazonaws.com"
+
+kubectl delete service helloworld-service
+kubectl create -f first-app/helloworld-service.yml
+
+== AWS creates ELB ===
+Services -> Route 53
+kubernetes00.getyoungit.com
+Create record set -> Name=Helloworld
+		    Type > alias
+		    Record > ELb (Exising in list)
+		 -> Click Create

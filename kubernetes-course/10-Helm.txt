@@ -1,0 +1,52 @@
+Packaging by helm 
+- Software built from kubernetes
+- package manager
+===== Install Helm ======
+=== AWS ====
+cd helm/
+wget https://storage.googleapis.com/kubernetes-helm/helm-v2.9.1-linux-amd64.tar.gz
+tar -xzvf helm-v2.9.1-linux-amd64.tar.gz
+sudo mv linux-amd64/helm /usr/local/bin/helm
+helm -h
+cat README.sh
+kubectl create helm-rbac.yaml  <== use for init
+helm init --service-account tiller
+kubectl get pods -n kube-system <== found tiller-deploy
+helm search redis  <== chart
+helm install --name myredis stable/redis  <== See detail and explain 
+kubectl get secret --namespace default myredis-redis
+kubectl get secret --namespace default myredis-redis -o yaml
+echo 'see above at redis-password autogen' | base64 --decode <<== get password
+kubectl run myredis-redis-client --rm --tty -i --env REDIS_PASSWORD=see above --image bitnami/redis:3.2.9-r2 --bash << get terminal
+echo $REDIS_PASSWORD
+redis-cli -h myredis-redis -a $REDIS_PASSWORD <<== Enter redis
+SET mykey myvalue
+GET mykey
+quit
+exit
+kubectl get pvc <<== see detail
+kubectl get pv
+kubectl get pod
+kubectl get deploy
+kubectl get svc
+helm delete myredis
+helm delete funny-snail
+kubectl get pv
+kubectl get pod
+kubectl get deploy
+kubectl get svc
+### help upgrade -f myvalues.yaml 
+helm search mysql
+helm search postgres
+helm search spinnaker
+helm search prometheus
+helm search ingress
+
+
+
+
+
+
+
+
+

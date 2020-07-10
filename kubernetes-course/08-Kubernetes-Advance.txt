@@ -1,0 +1,263 @@
+==== 01 Discovery Service =======
+==== Minikube ======
+kubectl create -f service-discovery/secrets.yml
+kubectl create -f service-discovery/database.yml
+kubectl create -f service-discovery/database-service.yml
+kubectl get pods
+kubectl get services
+kubectl create -f service-discovery/helloworld-db.yml
+kubectl create -f service-discovery/helloworld-db-service.yml
+minikube service helloworld-db-service --url
+Web Browser
+http://192.168.99.100:xxxxx
+kubectl get pod
+kubectl logs helloworld-deployment-xxxxxxxx-xxxxx
+kubectl exec database -i -t -- mysql -u root -p (rootpassword)
+show databases;
+use helloworld;
+show tables;
+select * from visits;
+\q
+kubectl run -i --tty busybox --image=busybox --restart=Never -- sh
+nslookup helloworld-db-service
+kubectl get svc
+telnet helloworld-db-service 3000
+GET /
+kubectl delete pod busybox
+
+==== 02 ConfigMap =======
+==== Minikube ======
+kubectl create configmap nginx-config --from-file=configmap/reverseproxy.conf
+kubectl get configmap
+kubectl get configmap nginx-config -o yaml << Output
+cat configmap/nginx.yml  << Gen. from reverseproxy.conf
+kubectl create -f configmap/nginx.yml
+kubectl create -f configmap/nginx-service.yml
+minikube service helloworld-nginx-service --url
+kubectl get pod
+curl http://192.168.99.100:xxxxx –vvvv
+kubectl exec -i -t helloworld-nginx -c nginx -- bash
+ps x
+cat /etc/nginx/conf.d/reverseproxy.conf
+
+
+=== 03 Ingress ======
+===== Minikube ====
+kubectl create -f ingress/ingress.yml
+kubectl create -f ingress/nginx-ingress-controller.yml
+kubectl create -f ingress/echoservice.yml
+kubectl create -f ingress/helloworld-v1.yml
+kubectl create -f ingress/helloworld-v2.yml
+kubectl get pod
+minikube ip
+curl 192.168.99.100
+curl 192.168.99.100 -H 'Host: helloworld-v1.example.com' << Hello World!
+curl 192.168.99.100 -H 'Host: helloworld-v2.example.com' << Hello World v2!
+kubectl get svc
+
+
+==== 04 External DNS =====
+===== AWS ========
+vargrant up
+vagrant ssh
+./external-dns/put-node-policy.sh
+kubectl apply -f ./ingress/  << can be correct
+vim ingress/nginx-ingress-controller.yml << Remove hostPort: 80 2 line
+kubectl apply -f external-dns/service-l4.yaml
+
+kubectl get svc
+kubectl get svc --o wide
+kubectl apply -f external-dns.yaml
+kubectl apply -f ingress.yaml
+kubectl get pods
+nginx-ingress-controller-xxxx
+kubectl logs external-dns-xxxxxxx-xxxxx
+curl helloworld-v1.kubernetes.getyoungit.com
+curl helloworld-v1.kubernetes.getyoungit.com
+
+===== 05 Volume =======
+==== AWS ======
+aws ec2 create-volume --size 10 --region ap-southeast-1 --availability-zone ap-southeast-1a --volume-type gp2 --tag-specifications 'ResourceType=volume, Tags=[{Key=KubernetesCluster, Value=kubernetes.getyoungit.com}]'
+== Check Volume ID ===
+vim volumes/helloworld-with-volume.yml << input volume ID
+kubectl get node
+kubectl get pod	
+ดูค่าของ pod เพื่อดูรายละเอียด
+kubectl describe pod helloworld-deployment-xxxxxxxxxxx-xxxxx
+ตรวจสอบว่ามีการแม็บกับโวลูมหรือไม่
+kubectl get pod 
+ตรวจสอบว่าได้สร้างเสร็จเรียบร้อยแล้ว
+kubectl exec helloworld-deployment-xxxxxxxxx-xxxxx -i -t -- bash
+ls -ahl /myvol/
+echo 'test' > /myvol/myvol.txt
+echo ‘'est2' > /test.txt
+ls -ahl /myvol/myvol.txt
+ls -ahl /test.txt
+exit
+kubectl get node
+kubectl describe pod helloworld-deployment-xxxxxxxx-xxxxx << See Ip address
+kubectl drain ip-172-20-59-208.ap-southeast-1.compute.internal --force << Move new
+kubectl get pod
+kubectl describe pod helloworld-deployment-xxxxxxxx-xxxx << New
+kubectl exec helloworld-deployment-6f678f847-b8w66 -i -t -- bash
+ls -ahl /myvol/myvol.txt
+ls -ahl /test.txt
+exit
+kubectl delete -f volumes/helloworld-with-volume.yml
+รอสักพัก
+aws ec2 delete-volume --region ap-southeast-1 --volume-id vol-0ffa562bd8b12f490
+
+
+===== 06 Autoprovisioning & Wordpress =======
+aws efs create-file-system --creation-token 2
+aws ec2 describe-instances  << See SubnetID, GroupID use in below
+aws efs create-mount-target --file-system-id fs-77fcc236 --subnet-id subnet-00a24cd668c7511c1 --security-groups sg-05160687ee4b9c4eb
+=== See fs id to use below ====
+
+=========Skip ==========
+aws efs delete-mount-target \
+--mount-target-id ID-of-mount-target-to-delete \
+--profile adminuser \
+--region aws-region
+
+vim wordpress-web.yml << See nfs: server: 
+kubectl create -f storage.yml
+kubectl create -f pv-claim.yml
+kubectl create -f wordpress-secrets.yml
+kubectl create -f wordpress-db.yml
+kubectl create -f wordpress-db-service.yml
+kubectl get pod
+kubectl describe pod wordpress-db-xxxxx << === See above
+kubectl get pod
+kubectl create -f wordpress-web.yml
+kubectl create -f wordpress-web-service.yml
+=== Go to Route 53 > Create new Record < Wordpress/alias/ELB
+=== Use Wordpress =====
+kubectl get pod 
+
+kubectl edit deploy/wordpress-deployment
+ไปใต้ command เพิ่มคำสั่ง
+       - command:
+           bash
+           -c
+           chown www-data:www-data /var/www/html/wp-content/uploads && docker-entrypoint.sh 
+kubectl get pod
+
+kubectl delete pod wordpress-db-t82p9
+kubectl delete pod wordpress-deployment-54fc84cb9c-2lgbf
+kubectl delete pod wordpress-deployment-54fc84cb9c-spw5j (ถ้าขึ้น error ให้ตรวจสอบว่าระบบได้ลบสองอิมเมจ
+kubectl get pod
+kubectl logs wordpress-deployment-54fc84cb9c-spw5j (พบว่าไม่ขึ้นแล้ว)
+kubectl exec wordpress-deployment-985759f46-26gg6 -i -t – bash
+ls wp-content/uploads/
+kubectl get pod
+kubectl logs wordpress-db-jrp67
+exit
+
+===== 7 Pod Preset ===
+Obsolete v1.13 > v1alpha1
+
+==== 8 StatefulSets
+kubectl delete deployment wordpress-deployment
+kubectl delete services wordpress-db
+kubectl delete services wordpress
+kubectl delete rc wordpress-db
+kubectl delete pvc db-storage
+kubectl delete pod wordpress-deployment-xxxxxxxxx-xxxxx
+kubectl delete pod wordpress-db-d7tnx
+
+kubectl get nodes
+kubectl create -f cassandra.yaml
+kubectl get pod
+kubectl get pv
+kubectl get pvc
+ 
+watch kubectl get pod 
+kubectl get pod
+kubectl exec -it cassandra-0 -- nodetool status
+ 
+UN ย่อจาก Up และ Normal
+kubectl exec -it cassandra-0 -- bash
+ระบบจะติดต่อทั้ง 3 เครื่อง
+เข้าไปใน shell
+ping cassandra-0.cassandra
+ping cassandra-1.cassandra
+ping cassandra-2.cassandra
+exit
+kubectl delete pod cassandra-2
+kubectl get pod
+พบว่าจะมีการนำ Cassandra-2 ขึ้นรอ
+kubectl get pv
+พบว่าติดต่อ Storage เดียวกัน
+kubectl exec -it cassandra-0 -- nodetool status
+3.	การลบค่า Cassandra
+kubectl delete statefulsets.app cassandra
+จะลบพอร์ตไปด้วย
+kubectl delete service cassandra
+kubectl delete storageclasses standard
+kubectl delete pvc cassandra-data-cassandra-0
+
+==== 9 Daemon Set
+Change in dashboard or api.xxx/ui
+
+==== 10 Autoscaling
+kubectl create -f autoscaling/hpa-example.yml
+kubectl get hpa
+kubectl run -i --tty load-generator --image=busybox /bin/sh
+wget http://hpa-example.default.svc.cluster.local:31001
+ต้องมี dns ก่อน
+cat index.html
+rm index.html
+while true; do wget –q -0- http://hpa-example.default.svc.cluster.local:31001; done
+OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK! OK!OK!
+4.	เปิดหน้าต่าง 
+kubectl get pod 
+kubectl get hpa
+จะมีรายงานว่าปัจจุบันใช้งานเท่าไร
+kubectl get pod 
+พบว่าระบบจะเพิ่มเครื่องที่ดำเนินการในรายการ pod
+5.	กลับไปกดคีย์ Ctrl+C เพื่อออก
+kubectl get hpa 
+เมื่อลดลง ก็จะลดจำนวนของเครื่องที่ทำงานลงเหลือ 3 เครื่อง
+kubectl get hpa
+
+
+====== 11 Affinity and Anti-affinity
+2.	ตรวจสอบ nodes
+kubectl get nodes
+kubectl describe node ชื่อเครื่องแรก
+เลื่อนดู Labels: เพื่อดูรายละเอียด และเครื่องที่ติดต่อเพื่อดู Affinity อยู่บรรทัดที่ 3 ดูโซน และชื่อ hostname
+cd affinity 
+vim node-affinity-yaml
+อธิบายถึงค่า requiredDuringSchedulingIgnoredDuringExecution และ preferred DuringSchedulingIgnoredDuringExecution
+มีชื่อ values: ว่า dev และ engineering-project1
+kubectl create -f node-affinity-yaml
+kubectl get pod
+kubectl describe pod พ็อดแรกที่แสดง
+ดูรายการในตารางด้านล่าง
+kubectl get nodes
+kubectl label node โหนดแรกที่แสดง env=dev
+เป็นการระบุให้เครื่องแรกรองรับคีย์ dev
+kubectl label node โหนดสองที่แสดง env=dev
+เป็นการระบุให้เครื่องแรกรองรับคีย์ dev
+watch kubectl get pods
+เพื่อไล่ดูจนสร้างเสร็๗
+kubectl describe pod node-affinity-xxxxxxx-xxxx  
+node-affinity-xxxxxxx-xxxxxx เป็นรายการ pod สุดท้าย
+ดูรายละเอียดว่าระบบสร้างในเครื่องใด
+เลื่อนไปดูบรรทัดที่ 3 เพื่อให้ทราบว่ามีการรันในบรรทัดใด
+kubectl label node โหนดแรกที่แสดง team=engineering-project1
+ดูว่า Name และ Node ที่สร้างเครื่องใด
+kubectl delete pod node-affinity-xxxxxxxx-xxxx 
+รายการสุดท้าย
+kubectl get pod
+พบว่าจะมีการสร้าง pod ใหม่ขึ้นมา
+kubectl describe pod node-affinity-xxxxxxx-xxxxx (pod ใหม่ที่สร้าง)
+พบว่าจะสร้างที่โหนดเดิมเนื่องจากสอดคล้องกับ rule ที่ระบุ และมาสร้างที่เครื่องนี้เป็นหลักใช้ tag env=dev
+
+
+
+
+
+
+

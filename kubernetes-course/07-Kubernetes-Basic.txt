@@ -1,0 +1,159 @@
+Basic Kubernetes
+===========
+== 1-Replica===
+=== Minikube========
+kubectl get node
+git clone https://github.com/khajorn/kubernetes-course
+cd kubernetes-course/
+kubectl create -f replication-controller/helloworld-repl-controller.yml
+kubectl delete pod helloworld-controller-xxxx (check in kubectl get pod, select 1)
+kubectl scale --replicas=4 -f replication-controller/helloworld-repl-controller.yml
+kubectl get rc
+kubectl delete rc helloworld-controller
+
+== 2- Replication set (Rollout, history)======
+=== Minikube or kops========
+make 2 apps -> Hello world!, Hello world v2!
+vagrant ssh
+cd docker demo
+nano index.js -> Hello world! -> Hello World v2!
+ctrl+O, ctrl+x
+sudo docker build . (Get build id 97dfdcf1c809)
+sudo docker run -p 3000:3000 -it 97dfdcf1c809
+
+sudo docker tag 97dfdcf1c809 khajorn/k8s-demo:2
+sudo docker images
+sudo docker push khajorn/k8s-demo:2
+
+kubectl create -f deployment/helloworld.yml (pod/rc)
+kubectl get deployment 
+kubectl get pod
+kubectl describe pod ระบุเลขPodจะทราบว่าอยู่ที่โหนดไหน
+kubectl get pod --show-label
+kubectl rollout status deployment/helloworld-deployment
+kubectl expose deployment helloworld-deployment --type=NodePort
+kubectl get service (Service appear)
+kubectl describe service helloworld-deployment
+Hello world! (replica set1)
+
+kubectl set image deployment/helloworld-deployment k8s-demo=sipadocker/k8s-demo:2
+kubectl get pod -> (New replica set2)
+## If you deploy on minikube 
+minikube service helloworld-deployment –url
+get url and test it ##
+
+Hello world v2!
+
+kubectl rollout undo deployment/helloworld-deployment
+Hello world! (replica set1)
+
+kubectl rollout history deployment/helloworld-deployment
+
+kubectl edit deployment/helloworld-deployment
+ดีฟอลท์ 10 เวอร์ชัน สามารถปรับเพิ่มได้ตามต้องการ
+
+=======3-Services=========
+=== Minikube========
+Kubectl get node
+Kubectl get pods
+Kubectl create –f first-app/helloworld.yml
+Kubectl get pods
+kubectl describe pod nodehelloworld.example.com
+kubectl create -f first-app/helloworld-nodeport-service.yml
+minikube service helloworld-service --url
+curl http://192.168.99.100:31001
+kubectl describe svc helloworld-service
+Kubectl get svc 
+kubectl delete svc helloworld-service
+==== Recreate to check ip address =====
+kubectl create -f first-app/helloworld-nodeport-service.yml
+Kubectl describe svc helloworld-service
+kubectl delete svc helloworld-service
+
+====== 4 Label =======
+=== Minikube or aws ==========
+kubectl get nodes
+cat deployment/helloworld-nodeselector.yml <<== See last line
+kubectl get nodes --show-labels
+kubectl delete service helloworld-deployment <<== Skip if no helloworld-deployment
+kubectl delete deployment helloworld-deployment
+kubectl create -f deployment/helloworld-nodeselector.yml
+kubectl get deployment
+kubectl get pods
+kubectl describe pod helloworld-deployment-xxxxxxxxx-xxxxx <<== see on above
+kubectl label nodes minikube hardware=high-spec  <<== Input label 
+kubectl get nodes
+kubectl get nodes --show-labels 
+kubectl get pods
+kubectl describe pod helloworld-deployment-xxxxxxxxx-xxxx <<=== see on above
+
+====== 5 Health check =======
+=== Minikube or aws ==========
+kubectl delete deployment helloworld-deployment
+kubectl create -f deployment/helloworld-healthcheck.yml
+kubectl get pods
+kubectl edit deployment/helloworld-deployment   << see threshold 1-5, change and save Esc, :wq!
+
+
+====== 6 Readiness =======
+=== Minikube or aws ==========
+kubectl delete deployment helloworld-deployment
+kubectl create -f deployment/helloworld-healthcheck.yml && watch -n1 kubectl get pods
+(Check and Restart)
+kubectl create -f deployment/helloworld-liveness-readiness.yml && watch -n1 kubectl get pods
+(Check working after start)
+
+===== 7 Pod state and Pod lifecycle ====
+=== minikube =======
+vim pod-lifecycle/lifecycle.yaml
+watch –n1 kubectl get pods
+cd kubernetes-course/pod-lifecycle
+kubectl create –f lifecycle.yaml
+kubectl exec -it lifecycle-69f486767f-8qzcd -- cat /timing (ดูสถานะการทำงาน พบว่าตามขั้นตอน)
+kubectl exec -it lifecycle-69f486767f-8qzcd -- tail /timing -f (ดูข้อมูลล่าสุด)
+(See on watch screen status)
+
+
+===== 8 Secrets =========
+==== minikube ====
+kubectl create –f deployment/helloworld-secrets.yml   (Define secret variable)
+kubectl create -f deployment/helloworld-secrets-volumes.yml  (Use secret variable on volume)
+kubectl get pods 
+kubectl describe pod helloworld-deployment-xxxxxxxxxx-xxxxx << See and above
+kubectl exec helloworld-deployment-xxxxxxxxxx-xxxxx –i –t -- /bin/bash
+cat /etc/creds/username  <<== Check secret send to minikube
+cat /etc/creds/password <<== Check secret send to minikube
+mount
+ls /run/secrets/kubernetes.io/serviceaccount
+
+
+====== 9 Wordpress & mysql No-volume ========
+==== minikube ========
+kubectl create -f wordpress/wordpress-secrets.yml
+kubectl create -f wordpress/wordpress-single-deployment-no-volumes.yml
+kubectl get pods
+kubectl describe pod wordpress-deployment-xxxxx <<== see and above
+kubectl create -f wordpress/wordpress-service.yml
+minikube service wordpress-service --url 
+==== Use wordpress ======
+kubectl get pods
+kubectl delete pod/wordpress-deployment-xxxx <<=== Delete
+kubectl get pods <<=== New Initial
+minikube service wordpress-service --url
+==== Use wordpress again======
+
+======10 Web UI ======
+===== Minikube or AWS ======
+kubectl create -f sample-user.yaml <<== admin, password in Base64
+kubectl –n kube-system get secret | grep admin-user
+kubectl –n kube-system describe secret admin-user-token-<id ที่แสดงก่อนหน้า>  << See certificate
+kubectl config view
+===Case minikube ===
+minikube dashboard --url 
+===Case AWS ========
+https://api.kubernetes.getyoungit.com/UI
+
+
+
+
+

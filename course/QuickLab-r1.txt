@@ -40,6 +40,13 @@ sudo mv kubectl /usr/local/bin/
 sudo chmod +x /usr/local/bin/kubectl
 kubectl
 
+การติดตั้ง Kops
+wget https://github.com/kubernetes/kops/releases/download/v1.17.0/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/
+sudo ssh-keygen -f .ssh/id_rsa
+cat .ssh/id_rsa.pub
+
 การบริหารงาน Kops
 kops validate cluster --state=s3://kops-state-a001a
 kubectl get nodes --show-labels

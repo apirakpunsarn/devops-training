@@ -1,0 +1,26 @@
+ปฏิบัติการที่ 1 การติดตั้ง minikube บน Windows
+การดาวน์โหลด Minikube และติดตั้ง
+1. ไปที่เว็บ chocolatey.org
+2. คลิกที่ Install Now
+ใส่ e-mail เพื่อลงทะเบียน
+3. เปิด Windows PowerShell ด้วยสิทธิ์ administrator
+4. 
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+5. choco install minikube
+
+การเปิดบริการ Hyper-V
+1. Turn Windows Features on or Off
+เช็คบ็อกซ์เลือก Hyper-V
+2. รีสตาร์ท
+3. เปิด Windows Command หรือ Powershell -> Run as administrator
+
+การติดตั้ง Docker Client บน Windows
+1. https://docs.docker.com/docker-for-windows/install/
+ดาวน์โหลด และดำเนินการติดตั้ง Docker บนเครื่อง Windows
+
+2. เปิด Command Prompt และกำหนดค่าให้ระบุเป็น auto
+bcdedit /set hypervisorlaunchtype auto
+
+
+
+

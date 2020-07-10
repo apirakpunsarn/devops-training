@@ -1,0 +1,29 @@
+การบริหารงาน Minikube
+minikube start
+minikube status
+minikube start --driver=virtualbox
+minikube stop
+minikube delete
+minikube dashboard 
+cat .kube/config
+
+DevOps
+DevSecOps
+(https-> เข้ารหัสในการส่ง Package)
+
+การใช้งาน kubectl 	
+kubectl create deployment hello-minikube --image=k8s.gcr.io/echoserver:1.10
+
+kubectl expose deployment hello-minikube --type=NodePort --port=8080
+
+kubectl get pod
+kubectl get service
+
+minikube service hello-minikube --url
+Open Browser and input url
+kubectl delete services hello-minikube
+kubectl delete deployment hello-minikube
+kubectl get pod
+kubectl delete pod hello-minikube-ระบุค่า ID
+minikube stop
+

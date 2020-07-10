@@ -1,0 +1,54 @@
+Basic Kubernetes
+===========
+== Replica===
+Minikube
+kubectl get node
+git clone https://github.com/khajorn/kubernetes-course
+cd kubernetes-course/
+kubectl create -f replication-controller/helloworld-repl-controller.yml
+kubectl delete pod helloworld-controller-xxxx (check in kubectl get pod, select 1)
+kubectl scale --replicas=4 -f replication-controller/helloworld-repl-controller.yml
+kubectl get rc
+kubectl delete rc helloworld-controller
+
+== Replication set (Rollout, history)======
+make 2 apps -> Hello world!, Hello world v2!
+vagrant ssh
+cd docker demo
+nano index.js -> Hello world! -> Hello World v2!
+ctrl+O, ctrl+x
+sudo docker build . (Get build id 97dfdcf1c809)
+sudo docker run -p 3000:3000 -it 97dfdcf1c809
+
+sudo docker tag 97dfdcf1c809 khajorn/k8s-demo:2
+sudo docker images
+sudo docker push khajorn/k8s-demo:2
+
+kubectl create -f deployment/helloworld.yml (pod/rc)
+kubectl get deployment 
+kubectl get pod
+kubectl describe pod ระบุเลขPodจะทราบว่าอยู่ที่โหนดไหน
+kubectl get pod --show-label
+kubectl rollout status deployment/helloworld-deployment
+kubectl expose deployment helloworld-deployment --type=NodePort
+kubectl get service (Service appear)
+kubectl describe service helloworld-deployment
+Hello world! (replica set1)
+
+kubectl set image deployment/helloworld-deployment k8s-demo=sipadocker/k8s-demo:2
+kubectl get pod -> (New replica set2)
+Hello world v2!
+
+kubectl rollout undo deployment/helloworld-deployment
+Hello world! (replica set1)
+
+kubectl rollout history deployment/helloworld-deployment
+
+kubectl edit deployment/helloworld-deployment
+ดีฟอลท์ 10 เวอร์ชัน สามารถปรับเพิ่มได้ตามต้องการ
+
+========Services=========
+
+
+
+

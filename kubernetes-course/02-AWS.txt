@@ -1,0 +1,21 @@
+IAM
+kops -> Programmatic -> Administrativeaccess policy
+AKIAQFRIFO35W74FK3ON
+PGYUdahFcr6BpJqnolWR+oNm55molGQFiwS4oEX5
+
+S3
+AP-Southeast-01 -> Region
+kops-state-a0xxb -> Bucket
+
+Route53
+kubernetesxx.getyoungit.com
+-> Name Registration
+   -> create NS map to AWS Name 
+
+host -t NS kubernetesxx.getyoungit.com
+
+kubernetes01.getyoungit.com
+
+
+
+		

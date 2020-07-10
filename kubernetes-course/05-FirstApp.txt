@@ -1,0 +1,45 @@
+-> AWS
+===========
+การติดตั้ง Kops
+wget https://github.com/kubernetes/kops/releases/download/v1.17.0/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+sudo ssh-keygen -f .ssh/id_rsa
+cat .ssh/id_rsa.pub
+
+kops create cluster --name=kubernetesxx.getyoungit.com --state=s3://kops-state-a001b --zones=ap-southeast-1a --node-count=3 --node-size=t2.micro --master-size=t2.micro --dns-zone=kubernetesxx.getyoungit.com
+
+kops update cluster --name kubernetes.getyoungit.com --yes --state=s3://kops-state-a001a
+
+kops delete cluster --name=kubernetes.getyoungit.com --state=s3://kops-state-a001a --yes
+ถ้ายังไม่มี Cluster ใน aws ให้สร้าง ต้องมั่นใจว่าได้แก้ไขปัญหา DNS แล้ว
+
+
+cd ubuntu  (vagrantfile -> bionic)
+vagrant up (Start virtual box)
+vagrant ssh (Open shell)
+======================
+Exercise -> Minikube & AWS
+=====================
+sudo apt-get install git
+git clone https://github.com/khajorn/kubernetes-course
+kubectl get node
+kubectl create -f first-app/helloworld.yml
+kubectl get pod
+kubectl describe pod nodehelloworld.example.com
+--------------
+Kubectl port-forward nodehelloworld.example.com 8081:3000
+
+kubectl get service		
+no resource
+
+kubectl expose pod nodehelloworld.example.com --type=NodePort --name nodehelloworld-service
+
+kubectl get service
+
+kubectl delete service nodehelloworld-service
+kubectl delete pod nodehelloworldexample.com
+
+
+
+

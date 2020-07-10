@@ -1,0 +1,134 @@
+=== Install kubeadm ====
+>== Linux only, Easy to use
+>=== 2GB, 2 Processor
+>=== Private and Public Network
+>=== Use minimal 2 nodes
+>=== Digitalocean cloud
+> Digital Ocean > Subscribe -> Create Account
+> = Create => Droplet
+> Choose Ubuntu, Version 18.04.3
+> 2G, 1 CPU 50G 2TB 
+> 2 Droplet kubernetes-master kubernetes-node-01 
+> Create Firewall -> Kubernetes-cluster, 
+> SSH TCP 22 ->  Specific your ipaddress
+> All TCP All port, Kubernetes-Cluster
+> All UDP All port, Kubernetes-Cluster
+> kubernetes Cluster
+> See Dashbobard
+> See your Ip address
+====== Install Kubeadm ======
+Open your Ubuntu
+ssh 206.189.117.170 -l root -l /.ssh/yourprivatekey <= your path and master
+git clone https://github.com/khajorn/on-prem-or-cloud-agnostic-kubernetes.git
+cd on-prem-or-cloud-agnostic-kubernetes/
+vim scripts/install-kubernetes.sh
+su -i
+apt install vim vim-gtk3 vim-tiny neovim 
+scripts/install-nodes.sh
+
+sudo apt install ssh
+useradd admin
+useradd ubuntu
+======= 1. Install Kubernetes Master =======
+apt-get update
+apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository \
+   "deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+   $(lsb_release -cs) \
+   stable"
+apt-get update && apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 17.03 | head -1 | awk '{print $3}')
+
+echo "installing kubernetes"
+apt-get update && apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+
+# DigitalOcean without firewall (IP-in-IP allowed) - or any other cloud / on-prem that supports IP-in-IP traffic
+# echo "deploying kubernetes (with calico)..."
+# kubeadm init --pod-network-cidr=192.168.0.0/16 # add --apiserver-advertise-address="ip" if you want to use a different IP address than the main server IP
+# export KUBECONFIG=/etc/kubernetes/admin.conf
+# kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
+# kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+
+
+# DigitalOcean with firewall (VxLAN with Flannel) - could be resolved in the future by allowing IP-in-IP in the firewall settings
+echo "deploying kubernetes (with canal)..."
+kubeadm init --pod-network-cidr=10.244.0.0/16 # add --apiserver-advertise-address="ip" if you want to use a different IP address than the main server IP
+export KUBECONFIG=/etc/kubernetes/admin.conf
+curl https://docs.projectcalico.org/manifests/canal.yaml -O
+kubectl apply -f canal.yaml
+
+========= 2 Install Node =========
+#!/bin/bash
+echo "installing docker"
+apt-get update
+apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository \
+   "deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+   $(lsb_release -cs) \
+   stable"
+apt-get update && apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 17.03 | head -1 | awk '{print $3}')
+
+echo "installing kubeadm and kubectl"
+apt-get update && apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+
+== to use join from node see from script========
+kubeadm join xxxx:port --token idxxx --discovery-token-ca-cert-hash sha256:xxxxxx
+
+== Join the cluster ====
+
+======= 3 Create User ===
+#!/bin/bash
+groupadd ubuntu
+useradd -g ubuntu -G admin -s /bin/bash -d /home/ubuntu ubuntu
+mkdir -p /home/ubuntu
+cp -r /root/.ssh /home/ubuntu/.ssh
+chown -R ubuntu:ubuntu /home/ubuntu
+echo "ubuntu ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# create .kube/config
+mkdir -p ~ubuntu/.kube
+cp -i /etc/kubernetes/admin.conf ~ubuntu/.kube/config
+chown ubuntu:ubuntu ~ubuntu/.kube/config
+
+logout
+ssh ipaddress -l ubuntu -i !~/.ssh/getyoungit.pem
+
+
+======= 4 Test Kubernetes Script ========
+kubectl get nodes
+kubectl run helloworld --image=k8s.gcr.io/echoserver:1.4 --port=8080
+kubectl get pods
+curl public_ip:port <<== Node Server receive script file
+curl public_ip:port/directory
+
+
+AWS EKS -> Full Management Kubernetes service <= from aws
+
+
+
+
+
+
+
+
